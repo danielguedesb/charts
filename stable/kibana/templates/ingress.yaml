@@ -1,7 +1,7 @@
 {{- if .Values.ingress.enabled -}}
 {{- $serviceName := include "kibana.fullname" . -}}
 {{- $servicePort := .Values.service.externalPort -}}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   labels:
@@ -16,11 +16,12 @@ metadata:
     {{- end }}
 spec:
   rules:
-    {{- range $host := .Values.ingress.hosts }}
-    - host: {{ $host }}
+    {{- range .Values.ingress.hosts }}
+      {{- $url := splitList "/" . }}
+    - host: {{ first $url }}
       http:
         paths:
-          - path: /
+          - path: /{{ rest $url | join "/" }}
             backend:
               serviceName: {{ $serviceName }}
               servicePort: {{ $servicePort }}
